@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - settings/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - sqlite_data:/app/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  sqlite_data:
