@@ -1,7 +1,7 @@
 main.py
 import json
 import re
-from datetime import datetime, timedelta, timezone
+
 from typing import List, Optional
 
 import redis
@@ -10,29 +10,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, field_validator
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, create_engine, or_
-from sqlalchemy.orm import Session, declarative_base, relationship, sessionmaker
 
-# ==========================================================
-# CONFIG
-# ==========================================================
 
-DATABASE_URL = "sqlite:///./app.db"
-SECRET_KEY = "super_secret_key_for_demo_project_change_me"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REDIS_URL = "redis://localhost:6379/0"
 
-# ==========================================================
-# DB
-# ==========================================================
-
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-Base = declarative_base()
 
 # ==========================================================
 # REDIS
@@ -48,35 +28,6 @@ def get_redis_client():
 
 redis_client = get_redis_client()
 
-# ==========================================================
-# MODELS
-# ==========================================================
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    username = Column(String(100), unique=True, nullable=False, index=True)
-    phone = Column(String(20), nullable=False)
-    hashed_password = Column(String(255), nullable=False)
-    role = Column(String(20), default="user", nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    tasks = relationship("Task", back_populates="owner", cascade="all, delete")
-
-
-class Task(Base):
-    __tablename__ = "tasks"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, default="")
-    status = Column(String(30), default="new", nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    owner = relationship("User", back_populates="tasks")
 
 # ==========================================================
 # Pydantic SCHEMAS
